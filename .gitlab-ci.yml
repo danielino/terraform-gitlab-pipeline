@@ -1,0 +1,47 @@
+include:
+  - template: Terraform.gitlab-ci.yml
+
+stages:
+  #- pre-commit-check
+  - init
+  - validate
+  - build
+  - deploy
+  - cleanup
+
+variables:
+  TF_STATE_NAME: default
+  TF_CACHE_KEY: default
+  TF_ROOT: tests/
+
+cache:
+  key: "${TF_ROOT}"
+  paths:
+    - ${TF_ROOT}/.terraform/
+    - ${TF_ROOT}/*.tfstat*
+    - ${TF_ROOT}/*.lock*
+
+#pre-commit-check:
+#  stage: pre-commit-check
+#  image: python:3.6
+#  script:
+#    - pip install pre-commit
+#    - pre-commit run --all-files -v
+
+#init:
+#  extends: .init
+#  dependencies:
+#    - pre-commit-check
+
+deploy:
+  extends: .deploy
+  dependencies:
+    - build
+  when: always
+
+cleanup:
+  extends: .destroy
+  dependencies:
+    - deploy
+  when: always
+
